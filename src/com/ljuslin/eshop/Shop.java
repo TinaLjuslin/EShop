@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Shop {
-    UserInteraction uI = new UserInteraction();
-    List<Item> items = new ArrayList<>();
-    List<Employee> employees = new ArrayList<>();
-    List<Customer> customers = new ArrayList<>();
-
+    private UserInteraction uI = new UserInteraction();
+    private List<Item> items = new ArrayList<>();
+    private List<Employee> employees = new ArrayList<>();
+    private List<Customer> customers = new ArrayList<>();
+    private Checkout co = new Checkout();
     /**
      * Constructor, starts the shop and adds items
      */
@@ -62,11 +62,29 @@ public class Shop {
      * @param customer, customer the cart belong to
      */
     public void addToCart(Customer customer) {
-        listAllItems(customer);
+        List<Item> buyItems = searchItem();
+        if ( buyItems == null ) {
+            return;
+        }
         int choice = uI.getInt("Which item would you like to buy?");
-        if (choice > 0 && choice < items.size()) {
-            customer.addToCart(items.get(choice - 1));
-            items.get(choice -1).retractFromQuantity(1);
+        choice -= 1;
+        if (choice >= 0 && choice < buyItems.size()) {
+            if (buyItems.get(choice) != null) {
+                if (items.contains(buyItems.get(choice))) {
+                    for (Item item : items) {
+                        if (item.equals(buyItems.get(choice))) {
+                            item.retractFromQuantity(1);
+                            customer.addToCart(item);
+                            uI.printString((item.toString() + " added to cart"));
+                            return;
+                        }
+                    }
+                }
+            } else {
+                uI.printString("No items found");
+            }
+        } else {
+            uI.printString("Incorrect choice");
         }
     }
 
@@ -114,19 +132,24 @@ public class Shop {
      * List items in customers cart
      * @param customer the customer to list cart for
      */
-    public void listCart(Customer customer) {
+    public int listCart(Customer customer) {
         Cart cart = customer.getCart();
-        for (int i = 0; i < cart.items.size(); i++) {
-            uI.printString((i + 1) + ", " + cart.items.get(i));
+        if (cart != null && cart.getItems().size() > 0) {
+            for (int i = 0; i < cart.items.size(); i++) {
+                uI.printString((i + 1) + ", " + cart.items.get(i));
+            }
+            double total = cart.getTotalPriceOfCart();
+            uI.printString(("Total price of cart: " + total));
+            return cart.getItems().size();
+        } else {
+            uI.printString("Cart is empty.");
+            return 0;
         }
-        double total = cart.getTotalPriceOfCart();
-        uI.printString(("Total price of cart: " + total));
     }
-
     /**
      * Search for items that fits what user writes in prompt
      */
-    public void searchItem() {
+    public List<Item> searchItem() {
         String itemDesc = (uI.getString("What are you looking for?")).toLowerCase();
         ArrayList<Item> itemFits = new ArrayList<>();
         for (Item item : items) {
@@ -135,9 +158,15 @@ public class Shop {
                 itemFits.add(item);
             }
         }
-        for (int i = 0; i < itemFits.size(); i++) {
-            uI.printString((i + 1) + ", " + itemFits.get(i));
+        if ( itemFits.isEmpty()) {
+            uI.printString("No items found");
+            return null;
         }
+        for (int i = 0; i < itemFits.size(); i++) {
+            uI.printString(((i + 1) + ", " + itemFits.get(i)) + ", Quantity: "
+                    + String.valueOf(itemFits.get(i).getQuantity()));
+        }
+        return itemFits;
     }
 
     /**
@@ -145,11 +174,20 @@ public class Shop {
      * @param customer, the customer to remove item for
      */
     public void removeFromCart(Customer customer) {
-        listCart(customer);
-        int choice = uI.getInt("Which item would you like to  remove?");
-        Item item = customer.getCart().getItems().get(choice - 1);
-        if (choice > 0 && choice < customer.getCart().getItems().size()) {
-            customer.getCart().removeItem(item);
+        int sizeOfCart = listCart(customer);
+        if (sizeOfCart > 0) {
+            int choice = uI.getInt("Which item would you like to  remove?");
+            choice -= 1;
+            if (choice >= 0 && choice < sizeOfCart) {
+                Item item = customer.getCart().getItems().get(choice);
+                if (choice >= 0 && choice < customer.getCart().getItems().size()) {
+                    item.addToQuantity(1);
+                    customer.getCart().removeItem(item);
+                    uI.printString(item.toString() + " removed from cart");
+                }
+            } else {
+                uI.printString("Incorrect choice");
+            }
         }
     }
 
@@ -158,15 +196,40 @@ public class Shop {
      * @param customer, the customer to check out
      */
     public void goToCheckout(Customer customer) {
-    Checkout co = new Checkout();
+    if (customer.getCart().getItems().isEmpty()) {
+        uI.printString("Cart is empty");
+        return;
+        }
     co.customerCheckOut(customer);
+    customer.emptyCart();
     }
 
     /**
      * Return item to chop
      */
     public void returnItem(Customer customer) {
-        *********************************************''
+        List<Item> returnItems = searchItem();
+        if ( returnItems == null ) {
+            return;
+        }
+        int choice = uI.getInt("Which item would you like to return?");
+        choice -= 1;
+        if (choice >= 0 && choice < returnItems.size()) {
+            if (returnItems.get(choice) != null) {
+                if (items.contains(returnItems.get(choice))) {
+                    for (Item item : items) {
+                        if (item.equals(returnItems.get(choice))) {
+                            item.addToQuantity(1);
+                            co.returnItem(customer, item);
+                        }
+                    }
+                }
+            } else {
+                uI.printString("No items found");
+            }
+        } else {
+            uI.printString("Incorrect choice");
+        }
 
     }
 }
