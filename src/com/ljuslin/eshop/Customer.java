@@ -27,7 +27,9 @@ public class Customer extends People {
         this.username = "CU-" + String.valueOf(counter++);
         this.password = password;
     }
-
+    public String getName() {
+        return (getFirstName() + " " + getLastName());
+    }
     /**
      * Returns username
      * @return String, the username

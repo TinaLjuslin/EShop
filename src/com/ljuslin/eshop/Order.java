@@ -13,6 +13,7 @@ public class Order {
         this.customer = customer;
         this.totalPrice = totalPrice;
         this.status = Status.CREATED;
+        System.out.println("Status changed to " + status);
     }
 
     /**
@@ -73,5 +74,6 @@ public class Order {
 
     public void setStatus(Status status) {
         this.status = status;
+        System.out.println("Status changed to " + status);
     }
 }

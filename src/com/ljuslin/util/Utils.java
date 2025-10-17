@@ -82,7 +82,7 @@ public class Utils {
                         case 6 -> shop.emptyCart(customer);
                         case 7 -> shop.goToCheckout(customer);
                         case 8 -> shop.returnItem(customer);
-                        case 8 -> goOn = false;
+                        case 9 -> goOn = false;
                         default -> uI.printString("Incorrect choice, please try again");
                     }
                 }

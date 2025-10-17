@@ -39,14 +39,22 @@ public class Checkout {
         while (true) {
             char answer = uI.getYN("Have you payed? (Y/N): ");
             if (answer == 'Y') {
+                order.setStatus(Status.PAYED);
                 uI.printString("Thank you for your payment, your order is now being packed");
-                order.setStatus(Status.PACKED);
                 break;
             } else {
                 uI.printString("Sorry, your order is not being packed");
             }
         }
+        order.setStatus(Status.PACKED);
+        order.setStatus(Status.SHIPPING);
+        uI.printString("Your order is packed and shipped, we have sent your packet with PostNord," +
+                " good luck...");
         return 1;
+    }
+    public void returnItem(Customer customer, Item item) {
+        uI.printString((customer.getName() + " gets " + item.getPrice() + "SEK"));
+
     }
 
     /**
